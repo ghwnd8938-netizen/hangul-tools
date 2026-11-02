@@ -32,7 +32,8 @@ async function noHScroll(page, label) {
 function watch(page, errors, external) {
   page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-  page.on('request', (r) => { if (!r.url().startsWith('file:')) external.push(r.url()); });
+  page.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+  page.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !r.url().startsWith('file:')) external.push(r.url()); });
 }
 
 (async () => {

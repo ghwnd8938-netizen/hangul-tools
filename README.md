@@ -11,7 +11,7 @@
 - [Korean Numbers Reader](en/korean-numbers/)
 - [Fix Garbled Korean in CSV Files](en/korean-csv-fix/)
 
-입력한 글과 파일은 서버로 보내지 않습니다. 외부 스크립트, 글꼴, 분석 도구를 쓰지 않습니다.
+입력한 글과 파일은 서버로 보내지 않습니다. 외부 글꼴이나 라이브러리를 쓰지 않습니다. 방문 수만 쿠키 없는 Cloudflare Web Analytics로 익명 집계합니다.
 
 AI(Claude)가 만들고 자동 테스트로 검증합니다. 결과가 이상하면 이슈로 알려 주세요.
 

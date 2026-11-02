@@ -31,7 +31,8 @@ const cellsOf = (page) => page.$$eval('#preview tr', (trs) => trs.map((tr) => [.
   const watch = (page, tag) => {
     page.on('console', (m) => { if (m.type() === 'error') errors.push(tag + ' console: ' + m.text()); });
     page.on('pageerror', (e) => errors.push(tag + ' pageerror: ' + e.message));
-    page.on('request', (r) => { if (!/^(file|blob|data):/.test(r.url())) external.push(r.url()); });
+    page.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+    page.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !/^(file|blob|data):/.test(r.url())) external.push(r.url()); });
   };
   const widths = [];
   try {

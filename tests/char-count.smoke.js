@@ -34,7 +34,8 @@ function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
     const page = await context.newPage();
     page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-    page.on('request', (r) => { if (!r.url().startsWith('file:')) external.push(r.url()); });
+    await page.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+    page.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !r.url().startsWith('file:')) external.push(r.url()); });
 
     await page.goto(PAGE);
     check((await page.title()).includes('자소서 글자수'), 'page title');
@@ -173,7 +174,8 @@ function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
     const p2 = await ctx2.newPage();
     p2.on('console', (m2) => { if (m2.type() === 'error') errors.push('console(fallback): ' + m2.text()); });
     p2.on('pageerror', (e) => errors.push('pageerror(fallback): ' + e.message));
-    p2.on('request', (r) => { if (!r.url().startsWith('file:')) external.push(r.url()); });
+    await p2.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+    p2.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !r.url().startsWith('file:')) external.push(r.url()); });
     await p2.goto(PAGE);
     await p2.fill('#text', '안녕하세요 👋\n반갑습니다 ' + FAMILY + '\n\nabc def');
     const s3 = await readStats(p2);
@@ -185,7 +187,8 @@ function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
     const ctx3 = await browser.newContext({ viewport: { width: 360, height: 800 }, colorScheme: 'dark' });
     const p3 = await ctx3.newPage();
     p3.on('pageerror', (e) => errors.push('pageerror(dark): ' + e.message));
-    p3.on('request', (r) => { if (!r.url().startsWith('file:')) external.push(r.url()); });
+    await p3.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+    p3.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !r.url().startsWith('file:')) external.push(r.url()); });
     await p3.goto(PAGE);
     const dark = await p3.evaluate(() => ({
       bg: getComputedStyle(document.body).backgroundColor,

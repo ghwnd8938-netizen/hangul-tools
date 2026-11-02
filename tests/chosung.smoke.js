@@ -44,7 +44,8 @@ async function resultItems(page) {
     const page = await context.newPage();
     page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-    page.on('request', (r) => { if (!r.url().startsWith('file:')) external.push(r.url()); });
+    await page.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+    page.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !r.url().startsWith('file:')) external.push(r.url()); });
 
     await page.goto(PAGE);
     check((await page.title()).includes('초성 추출'), 'page title');
@@ -171,6 +172,7 @@ async function resultItems(page) {
     // 다크 모드에서도 같은 레이아웃
     const dark = await browser.newContext({ viewport: { width: 360, height: 800 }, colorScheme: 'dark' });
     const dpage = await dark.newPage();
+    await dpage.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
     dpage.on('console', (m) => { if (m.type() === 'error') errors.push('dark console: ' + m.text()); });
     dpage.on('pageerror', (e) => errors.push('dark pageerror: ' + e.message));
     await dpage.goto(PAGE);

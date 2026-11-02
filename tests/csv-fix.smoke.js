@@ -29,7 +29,8 @@ async function readDownload(dl) {
     const page = await context.newPage();
     page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
     page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-    page.on('request', (r) => { if (!/^(file|blob|data):/.test(r.url())) external.push(r.url()); });
+    await page.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+    page.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !/^(file|blob|data):/.test(r.url())) external.push(r.url()); });
 
     await page.goto(PAGE_URL);
     assert.strictEqual(await page.title(), '엑셀 CSV 한글 깨짐 고치기 - 무료 온라인 도구');
@@ -210,7 +211,8 @@ async function readDownload(dl) {
     const dpage = await dark.newPage();
     dpage.on('console', (m) => { if (m.type() === 'error') errors.push('dark console: ' + m.text()); });
     dpage.on('pageerror', (e) => errors.push('dark pageerror: ' + e.message));
-    dpage.on('request', (r) => { if (!/^(file|blob|data):/.test(r.url())) external.push(r.url()); });
+    await dpage.route('https://static.cloudflareinsights.com/**', (rt) => rt.fulfill({ status: 200, contentType: 'application/javascript', body: '' }));
+    dpage.on('request', (r) => { if (!r.url().startsWith('https://static.cloudflareinsights.com/') && !/^(file|blob|data):/.test(r.url())) external.push(r.url()); });
     await dpage.goto(PAGE_URL);
     await dpage.setInputFiles('#file', { name: 'test.csv', mimeType: 'text/csv', buffer: CP949 });
     await dpage.waitForSelector('#result:not([hidden])');
