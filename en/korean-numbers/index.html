@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korean Numbers Reader – Sino &amp; Native Korean Numbers, Prices, Time</title>
+<meta name="description" content="Type a number and see how to say it in Korean: Sino-Korean (일, 이, 삼) and native Korean (하나, 둘, 셋) with counter forms, prices in won, clock times, and phone numbers, each with romanization of the pronunciation. Runs entirely in your browser.">
+<link rel="stylesheet" href="../../assets/style.css">
+<style>
+  :root { color-scheme: light dark; }
+  [hidden] { display: none !important; }
+  .card h2 { margin: 0 0 12px; }
+  label.sub { margin-top: 22px; }
+  .hint, .note, .msg { font-size: 14px; color: var(--muted); margin: 6px 0 0; word-break: keep-all; }
+  .msg { min-height: 1.6em; }
+  .msg.err { color: var(--err); }
+  .examples { margin: 10px 0 4px; gap: 8px; }
+  .examples span { font-size: 14px; color: var(--muted); }
+  .examples button { padding: 4px 10px; font-size: 14px; font-weight: 600; }
+  .out { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px; }
+  .out .stat .v { font-size: 22px; line-height: 1.4; word-break: keep-all; overflow-wrap: anywhere; }
+  .out .stat .v.num { font-size: 22px; }
+  .rom { font-style: italic; overflow-wrap: anywhere; }
+  .stat .k, .rom, .lead, .note, .hint, .msg, footer.site, td, th { overflow-wrap: anywhere; }
+  input[type=text] { font-size: 18px; }
+  input[type=text]:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .explain p, .explain li { max-width: 68ch; }
+  .explain h3 { font-size: 16px; margin: 18px 0 4px; }
+  table [lang=ko] { white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="home" href="../">← All tools</a>
+  </header>
+
+  <h1>Korean Numbers Reader</h1>
+  <p class="lead">Type a number and see how to say it in Korean: Sino-Korean and native Korean numbers, prices in won, clock times and phone numbers, each with a romanization of the pronunciation.</p>
+
+  <section class="card" aria-labelledby="h-num">
+    <h2 id="h-num">Number → Korean</h2>
+    <label for="num-in">Whole number (0 to 9,999,999,999,999,999)</label>
+    <input type="text" id="num-in" inputmode="numeric" autocomplete="off" spellcheck="false" value="35000" aria-describedby="num-hint">
+    <p class="hint" id="num-hint">Commas and spaces are fine: 35,000 or 1 000 000.</p>
+    <div class="row examples">
+      <span>Try:</span>
+      <button type="button" class="secondary" data-target="num-in" data-value="16">16</button>
+      <button type="button" class="secondary" data-target="num-in" data-value="20">20</button>
+      <button type="button" class="secondary" data-target="num-in" data-value="10000">10,000</button>
+      <button type="button" class="secondary" data-target="num-in" data-value="1000000">1,000,000</button>
+      <button type="button" class="secondary" data-target="num-in" data-value="100000001">100,000,001</button>
+    </div>
+    <div id="num-out" class="out" aria-live="polite"></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-price">
+    <h2 id="h-price">Prices (원)</h2>
+    <label for="price-num">Amount in won → Korean</label>
+    <input type="text" id="price-num" inputmode="numeric" autocomplete="off" spellcheck="false" value="35000">
+    <div id="price-num-out" class="out" aria-live="polite"></div>
+
+    <label for="price-ko" class="sub">Korean price text → number</label>
+    <input type="text" id="price-ko" autocomplete="off" spellcheck="false" lang="ko" value="3만 5천원" aria-describedby="price-ko-hint">
+    <p class="hint" id="price-ko-hint">Hangul, digits or a mix: 삼만오천원, 3만 5천원, 만 원, 1억 2천만 원.</p>
+    <div class="row examples">
+      <span>Try:</span>
+      <button type="button" class="secondary" data-target="price-ko" data-value="삼만오천원" lang="ko">삼만오천원</button>
+      <button type="button" class="secondary" data-target="price-ko" data-value="만 원" lang="ko">만 원</button>
+      <button type="button" class="secondary" data-target="price-ko" data-value="십이만 삼천오백 원" lang="ko">십이만 삼천오백 원</button>
+    </div>
+    <div id="price-ko-out" class="out" aria-live="polite"></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-time">
+    <h2 id="h-time">Time</h2>
+    <label for="time-in">Time (24-hour HH:MM, or add am/pm)</label>
+    <input type="text" id="time-in" autocomplete="off" spellcheck="false" value="15:45" aria-describedby="time-hint">
+    <p class="hint" id="time-hint">Also accepts 3:45 pm or 오후 3시 45분. Hours use native numbers (세 시), minutes use Sino-Korean (사십오 분).</p>
+    <div class="row examples">
+      <span>Try:</span>
+      <button type="button" class="secondary" data-target="time-in" data-value="0:00">0:00</button>
+      <button type="button" class="secondary" data-target="time-in" data-value="12:00">12:00</button>
+      <button type="button" class="secondary" data-target="time-in" data-value="3:30">3:30</button>
+      <button type="button" class="secondary" data-target="time-in" data-value="23:59">23:59</button>
+    </div>
+    <div id="time-out" class="out" aria-live="polite"></div>
+  </section>
+
+  <section class="card" aria-labelledby="h-phone">
+    <h2 id="h-phone">Phone numbers</h2>
+    <label for="phone-in">Phone number</label>
+    <input type="text" id="phone-in" inputmode="tel" autocomplete="off" spellcheck="false" value="010-1234-5678">
+    <div id="phone-out" class="out" aria-live="polite"></div>
+  </section>
+
+  <p class="privacy">Everything runs in your browser. Nothing you type is sent anywhere. Romanization follows the Revised Romanization of Korean applied to standard pronunciation; casual speech may sound different.</p>
+
+  <section class="explain">
+    <h2>When to use which numbers</h2>
+    <p>Korean has two number systems. <strong>Sino-Korean</strong> numbers (<span lang="ko">일, 이, 삼</span>…) come from Chinese. <strong>Native Korean</strong> numbers (<span lang="ko">하나, 둘, 셋</span>…) go only up to 99 in everyday use.</p>
+    <ul>
+      <li><strong>Sino-Korean:</strong> prices (<span lang="ko">삼만 오천 원</span>), phone numbers (read digit by digit, 0 = <span lang="ko">공</span>), years, months and days of the month (<span lang="ko">삼월 오 일</span>), minutes and seconds (<span lang="ko">사십오 분</span>), floors, bus and room numbers, measurements, and any count of 100 or more.</li>
+      <li><strong>Native Korean:</strong> counting things and people with a counter word (<span lang="ko">사과 세 개</span>, three apples; <span lang="ko">두 명</span>, two people), the hour on the clock (<span lang="ko">세 시</span>), age in everyday speech (<span lang="ko">스무 살</span>), how many times (<span lang="ko">한 번</span>) and durations in months (<span lang="ko">두 달</span>).</li>
+    </ul>
+    <p>Before a counter, five native numbers shorten: <span lang="ko">하나 → 한, 둘 → 두, 셋 → 세, 넷 → 네, 스물 → 스무</span> (only for exactly 20; 21 is <span lang="ko">스물한</span>). Watch two month names: June is <span lang="ko">유월</span> and October is <span lang="ko">시월</span>, not 육월 or 십월.</p>
+    <table>
+      <caption class="sr-only">Korean numbers 1 to 10 and 20</caption>
+      <thead><tr><th scope="col">#</th><th scope="col">Sino</th><th scope="col">Native</th><th scope="col">Before a counter</th></tr></thead>
+      <tbody id="ref-table">
+        <tr data-n="1"><td>1</td><td lang="ko">일</td><td lang="ko">하나</td><td lang="ko">한</td></tr>
+        <tr data-n="2"><td>2</td><td lang="ko">이</td><td lang="ko">둘</td><td lang="ko">두</td></tr>
+        <tr data-n="3"><td>3</td><td lang="ko">삼</td><td lang="ko">셋</td><td lang="ko">세</td></tr>
+        <tr data-n="4"><td>4</td><td lang="ko">사</td><td lang="ko">넷</td><td lang="ko">네</td></tr>
+        <tr data-n="5"><td>5</td><td lang="ko">오</td><td lang="ko">다섯</td><td lang="ko">다섯</td></tr>
+        <tr data-n="6"><td>6</td><td lang="ko">육</td><td lang="ko">여섯</td><td lang="ko">여섯</td></tr>
+        <tr data-n="7"><td>7</td><td lang="ko">칠</td><td lang="ko">일곱</td><td lang="ko">일곱</td></tr>
+        <tr data-n="8"><td>8</td><td lang="ko">팔</td><td lang="ko">여덟</td><td lang="ko">여덟</td></tr>
+        <tr data-n="9"><td>9</td><td lang="ko">구</td><td lang="ko">아홉</td><td lang="ko">아홉</td></tr>
+        <tr data-n="10"><td>10</td><td lang="ko">십</td><td lang="ko">열</td><td lang="ko">열</td></tr>
+        <tr data-n="20"><td>20</td><td lang="ko">이십</td><td lang="ko">스물</td><td lang="ko">스무</td></tr>
+      </tbody>
+    </table>
+
+    <h2>FAQ</h2>
+    <h3>Why is 10,000 just 만, but 100,000,000 is 일억?</h3>
+    <p>The leading 1 is dropped before <span lang="ko">십, 백, 천</span>, and before <span lang="ko">만</span> when it is the first unit: <span lang="ko">만 원</span>, <span lang="ko">만 천</span> (11,000). <span lang="ko">억</span> and <span lang="ko">조</span> keep it: <span lang="ko">일억, 일조</span>. After a bigger unit this tool writes <span lang="ko">일만</span> (<span lang="ko">일억 일만</span>, 100,010,000) to avoid ambiguity. Cheques and contracts sometimes spell out <span lang="ko">일만, 일천</span> to prevent tampering.</p>
+    <h3>Why is 16 romanized simnyuk and not sipyuk?</h3>
+    <p><span lang="ko">십육</span> is pronounced [<span lang="ko">심뉵</span>]: an ㄴ sound is added before <span lang="ko">육</span> after a consonant, and ㅂ turns into ㅁ before ㄴ. The same happens in <span lang="ko">백육</span> [<span lang="ko">뱅뉵</span>] and <span lang="ko">천육백</span>. 60 (<span lang="ko">육십</span>) has no change: yuksip. <span lang="ko">백만</span> sounds like [<span lang="ko">뱅만</span>] and <span lang="ko">십만</span> like [<span lang="ko">심만</span>].</p>
+    <h3>Is 3:30 세 시 삼십 분 or 세 시 반?</h3>
+    <p>Both are correct. <span lang="ko">반</span> (half) is very common in speech.</p>
+    <h3>How do I say noon and midnight?</h3>
+    <p>This tool treats 0:00–11:59 as <span lang="ko">오전</span> (a.m.) and 12:00–23:59 as <span lang="ko">오후</span> (p.m.), so 12:00 is <span lang="ko">오후 열두 시</span> (<span lang="ko">정오</span>, noon) and 0:00 is <span lang="ko">오전 열두 시</span> (<span lang="ko">자정</span>, midnight). In conversation people often say <span lang="ko">낮 열두 시</span> and <span lang="ko">밤 열두 시</span> instead. Readings like <span lang="ko">십오 시</span> are heard in timetables and announcements.</p>
+    <h3>Why is 0 read 공 in phone numbers?</h3>
+    <p><span lang="ko">영</span> is zero as a quantity. When digits are read one at a time, as in phone numbers, 0 is <span lang="ko">공</span>. Some speakers also say <span lang="ko">에</span> at each dash.</p>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>Whole numbers from 0 to 9,999,999,999,999,999 only. No negatives, decimals, fractions, ordinals (<span lang="ko">첫째</span>) or dates.</li>
+      <li>Romanization reflects the standard pronunciation of each word. Tensing is not written (Revised Romanization does not mark it), sound changes across spaces are not shown (<span lang="ko">만 육천</span> is often said [<span lang="ko">만뉵천</span>]), and casual speech may differ. Phone numbers are romanized digit by digit, letter for letter, with no sound changes.</li>
+      <li>Counter forms shown are the general ones. A few counters take other forms (<span lang="ko">석 달</span>, <span lang="ko">넉 잔</span>), which are not covered.</li>
+      <li>The price reader understands Sino-Korean words and digits, not native numbers or English words.</li>
+    </ul>
+  </section>
+
+  <footer class="site">
+    <p>Built and tested by AI (Claude). Found a wrong result? <a href="https://github.com/ghwnd8938-netizen/hangul-tools/issues">Report it</a>.</p>
+    <p><span id="support"></span></p>
+  </footer>
+</div>
+
+<script src="tool.js"></script>
+<script>
+(function () {
+  'use strict';
+  var K = window.KoreanNumbers;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function el(tag, cls, text, lang) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    if (lang) e.lang = lang;
+    return e;
+  }
+
+  // One result card: label, Korean text, romanization line, optional note.
+  function block(label, ko, rom, note, isNumber) {
+    var d = el('div', 'stat');
+    d.appendChild(el('div', 'k', label));
+    d.appendChild(el('div', 'v' + (isNumber ? ' num' : ''), ko, isNumber ? null : 'ko'));
+    if (rom) d.appendChild(el('div', 'rom', rom));
+    if (note) d.appendChild(el('div', 'note', note));
+    return d;
+  }
+
+  function show(outId, nodes) {
+    var out = $(outId);
+    out.textContent = '';
+    nodes.forEach(function (n) { out.appendChild(n); });
+  }
+
+  function message(r) {
+    return el('p', 'msg' + (r.empty ? '' : ' err'), r.error);
+  }
+
+  function renderNumber() {
+    var r = K.readNumber($('num-in').value);
+    if (!r.ok) return show('num-out', [message(r)]);
+    var nodes = [block('Sino-Korean · ' + r.formatted, r.sino, r.sinoRoman)];
+    if (r.native) {
+      nodes.push(block('Native Korean', r.native.base, r.native.baseRoman));
+      var c = r.native.counter;
+      var phrases = [c + ' 개', c + ' 명', c + ' 살'];
+      nodes.push(block(
+        r.native.changes ? 'Before a counter (form changes)' : 'Before a counter (same form)',
+        phrases.join(' · '),
+        phrases.map(K.romanize).join(' · '),
+        '개 = items, 명 = people, 살 = years of age'
+      ));
+    } else {
+      nodes.push(block('Native Korean', '—', null, r.nativeNote));
+    }
+    show('num-out', nodes);
+  }
+
+  function renderPriceNum() {
+    var r = K.readNumber($('price-num').value);
+    if (!r.ok) return show('price-num-out', [message(r)]);
+    var ko = K.price(r.digits);
+    show('price-num-out', [block('₩' + r.formatted, ko, K.romanize(ko))]);
+  }
+
+  function renderPriceKo() {
+    var r = K.parsePrice($('price-ko').value);
+    if (!r.ok) return show('price-ko-out', [message(r)]);
+    show('price-ko-out', [
+      block('Amount', '₩' + r.formatted, null, null, true),
+      block('Standard spelling', r.reading, r.roman)
+    ]);
+  }
+
+  function renderTime() {
+    var r = K.readTime($('time-in').value);
+    if (!r.ok) return show('time-out', [message(r)]);
+    var nodes = [block(r.hhmm + ' with 오전/오후 (a.m./p.m.)', r.withPeriod, r.withPeriodRoman)];
+    if (r.half) nodes.push(block('With 반 (half past)', r.halfWithPeriod, r.halfWithPeriodRoman));
+    nodes.push(block('Without 오전/오후', r.half ? r.plain + ' · ' + r.half : r.plain,
+      r.half ? r.plainRoman + ' · ' + r.halfRoman : r.plainRoman));
+    if (r.special) {
+      nodes.push(block(r.special === '정오' ? 'Noon' : 'Midnight', r.special, r.specialRoman,
+        r.special === '정오' ? 'Also commonly: 낮 열두 시' : 'Also commonly: 밤 열두 시'));
+    }
+    if (r.h24) nodes.push(block('24-hour style (timetables, announcements)', r.h24, r.h24Roman));
+    show('time-out', nodes);
+  }
+
+  function renderPhone() {
+    var r = K.readPhone($('phone-in').value);
+    if (!r.ok) return show('phone-out', [message(r)]);
+    show('phone-out', [block('Digit by digit (0 = 공)', r.korean, r.roman,
+      'Romanized digit by digit, letter for letter; in fast speech sounds link (e.g. 일이 sounds like [이리]).')]);
+  }
+
+  var renderers = {
+    'num-in': renderNumber, 'price-num': renderPriceNum, 'price-ko': renderPriceKo,
+    'time-in': renderTime, 'phone-in': renderPhone
+  };
+  Object.keys(renderers).forEach(function (id) {
+    $(id).addEventListener('input', renderers[id]);
+    renderers[id]();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('button[data-target]'), function (b) {
+    b.addEventListener('click', function () {
+      var input = $(b.getAttribute('data-target'));
+      input.value = b.getAttribute('data-value');
+      renderers[input.id]();
+    });
+  });
+}());
+</script>
+</body>
+</html>

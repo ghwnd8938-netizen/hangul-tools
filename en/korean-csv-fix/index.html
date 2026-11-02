@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fix Garbled Korean Characters in CSV Files (Hangul encoding fixer)</title>
+<meta name="description" content="Korean text in a CSV shows up as ÀÌ¸§, ì´ë¦„ or � in Excel? Detect the encoding (CP949/EUC-KR or UTF-8) and save a UTF-8 copy that opens correctly in Excel or Google Sheets. Your file never leaves your browser.">
+<link rel="stylesheet" href="../../assets/style.css">
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
+  .wrap { overflow-wrap: break-word; }
+  .drop input[type=file] { display: block; margin: 12px auto 0; max-width: 100%; font: inherit; color: var(--text); }
+  .drop p { margin: 0; }
+  #result[hidden] { display: none; }
+  #result { margin-top: var(--gap); }
+  #result .stats { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  .stat .v { font-size: 16px; line-height: 1.4; }
+  #out-name { overflow-wrap: anywhere; }
+  .field { margin: var(--gap) 0; }
+  .field select { max-width: 20em; }
+  #status { margin: var(--gap) 0; }
+  #status p { margin: 0 0 6px; }
+  .preview { overflow: auto; max-height: 360px; border: 1px solid var(--border); border-radius: 8px; margin: 0 0 var(--gap); }
+  .preview:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .preview table { width: auto; min-width: 100%; }
+  .preview th, .preview td { white-space: pre; vertical-align: top; font-size: 14px; }
+  .preview thead th { background: var(--code-bg); position: sticky; top: 0; }
+  .preview .num { width: 1%; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #preview-title { margin: 0 0 8px; font-size: 16px; }
+  .hint { font-size: 14px; color: var(--muted); margin: 6px 0 0; }
+  .actions { margin-top: 4px; }
+  .examples th, .examples td { vertical-align: top; overflow-wrap: anywhere; }
+  .examples .seen { white-space: nowrap; }
+  .examples code { white-space: nowrap; }
+  .faq dt { font-weight: 700; margin-top: 12px; }
+  .faq dd { margin: 4px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="home" href="../">← All tools</a>
+  </header>
+  <h1>Fix Garbled Korean Characters in CSV Files</h1>
+  <p class="lead">Got a CSV from a Korean bank, online shop or data portal, and the Korean text shows up as <code>ÀÌ¸§</code>, <code>ì´ë¦„</code> or <code>�</code>? This tool detects the file’s encoding and saves a UTF-8 copy that opens correctly in Excel or Google Sheets.</p>
+
+  <section class="card" aria-label="CSV converter">
+    <div class="drop" id="drop">
+      <p>Drop a CSV, TSV or TXT file here, or choose one below.</p>
+      <label for="file" class="sr-only">Choose a CSV file</label>
+      <input type="file" id="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain">
+    </div>
+
+    <div id="result" hidden>
+      <div class="stats">
+        <div class="stat"><div class="k">File</div><div class="v" id="out-name">-</div></div>
+        <div class="stat"><div class="k">Detected encoding</div><div class="v" id="out-enc">-</div></div>
+        <div class="stat"><div class="k">Line endings</div><div class="v" id="out-eol">-</div></div>
+        <div class="stat"><div class="k">Size</div><div class="v" id="out-size">-</div></div>
+      </div>
+
+      <div class="field">
+        <label for="enc">Choose encoding manually</label>
+        <select id="enc">
+          <option value="auto">Auto-detect</option>
+          <option value="utf-8">UTF-8</option>
+          <option value="euc-kr">CP949 (EUC-KR, Korean)</option>
+        </select>
+        <p class="hint">If the Korean text in the preview looks garbled, try the other encoding.</p>
+      </div>
+
+      <div id="status" role="status" aria-live="polite"></div>
+
+      <h2 id="preview-title">Preview (first 10 rows)</h2>
+      <div class="preview" id="preview" tabindex="0" role="region" aria-labelledby="preview-title"></div>
+
+      <div class="row actions">
+        <button type="button" id="dl-bom" disabled>Save for Excel (UTF-8 with BOM)</button>
+        <button type="button" id="dl-nobom" class="secondary" disabled>Save as UTF-8 (no BOM)</button>
+      </div>
+      <p class="hint">Only the encoding changes; the content and line endings stay the same. Use the no-BOM file for Google Sheets and programs.</p>
+    </div>
+
+    <p class="privacy">Your file never leaves this browser. It is read and converted on your device and is not uploaded anywhere.</p>
+  </section>
+
+  <section>
+    <h2>What garbled Korean looks like</h2>
+    <p>The Korean word <span lang="ko">이름</span> (“name”) and the name <span lang="ko">홍길동</span> can turn into:</p>
+    <table class="examples">
+      <thead><tr><th scope="col">You see</th><th scope="col">Likely cause</th></tr></thead>
+      <tbody>
+        <tr><td class="seen"><code>ÀÌ¸§</code>, <code>È«±æµ¿</code></td><td>A CP949 (legacy Korean) file opened in Excel on Windows set to English or another Western European language.</td></tr>
+        <tr><td class="seen"><code>ì´ë¦„</code>, <code>í™ê¸¸ë™</code></td><td>A UTF-8 file without a BOM opened in Excel on the same kind of Windows.</td></tr>
+        <tr><td class="seen"><code>�̸�</code></td><td>A CP949 file opened in Google Sheets or a program that expects UTF-8.</td></tr>
+        <tr><td class="seen"><code lang="ko">?대쫫</code> or similar</td><td>A UTF-8 file without a BOM opened in Excel on Korean-language Windows.</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">On other system languages the garbage looks different, but the cause is the same.</p>
+
+    <h2>Why it happens</h2>
+    <p>A CSV file is plain text and does not say which character encoding it uses. Korean text is usually stored in one of two ways:</p>
+    <ul>
+      <li><strong>UTF-8</strong>, the modern standard used by Google Sheets and most web services.</li>
+      <li><strong>CP949</strong> (often called <strong>EUC-KR</strong>, or “ANSI” on Korean Windows), the legacy Korean encoding. Older Korean business systems often still export it, and Excel’s “CSV (Comma delimited)” format saves in it on Korean Windows. Some statement exports and public-data downloads are CP949 too.</li>
+    </ul>
+    <p>When you double-click a CSV, Excel for Windows looks for a byte order mark (BOM, the bytes <code>EF BB BF</code>) at the start. With a BOM it reads the file as UTF-8; without one it uses the computer’s legacy code page: Windows-1252 on English systems, CP949 on Korean ones. So a CP949 file is garbled on a non-Korean PC, and a UTF-8 file without a BOM is garbled on most Windows PCs. Google Sheets and most programs expect UTF-8, so CP949 files break there.</p>
+    <p>The fix is the same either way: read the file with the right encoding and save it as UTF-8, with a BOM for Excel and without one for everything else.</p>
+
+    <h2>How to use</h2>
+    <ol>
+      <li>Drop the file onto the box above, or pick it with the file button.</li>
+      <li>Check the detected encoding and the preview. If the Korean text still looks wrong, change “Choose encoding manually”.</li>
+      <li>Click “Save for Excel” if you will open the file in Excel, or “Save as UTF-8 (no BOM)” for Google Sheets and programs.</li>
+    </ol>
+
+    <h2>FAQ</h2>
+    <dl class="faq">
+      <dt>Does the content change?</dt>
+      <dd>No. Characters, commas, quotes and line endings (CRLF/LF) stay exactly as they were; only the encoding and the BOM change.</dd>
+      <dt>Is it safe to use with bank statements?</dt>
+      <dd>The page has no server side: the file is processed by JavaScript in your browser and nothing is sent over the network. You can confirm this in your browser’s developer tools (Network tab).</dd>
+      <dt>BOM or no BOM?</dt>
+      <dd>Use the BOM version for Excel. Google Sheets reads UTF-8 with or without a BOM. Some programs treat the BOM as part of the first column name, so they are better off without it. In Python, <code>encoding="utf-8-sig"</code> strips a BOM, and <code>encoding="cp949"</code> reads the original Korean file directly.</dd>
+      <dt>Can it convert to CP949/EUC-KR, e.g. for uploading to a Korean site?</dt>
+      <dd>No. The text encoder built into browsers can only write UTF-8. A text editor such as VS Code (“Save with Encoding” → Korean (EUC-KR)) can do it.</dd>
+      <dt>I converted it and it is still garbled.</dt>
+      <dd>If the file was opened and saved in Excel while it looked garbled, parts of the original text may be lost for good. Download the original again and convert that. Alternatively, Excel’s Data → From Text/CSV lets you pick the file origin “949 : Korean” yourself.</dd>
+    </dl>
+
+    <h2>Limitations</h2>
+    <ul>
+      <li>Auto-detection is a guess: valid UTF-8 is treated as UTF-8, anything else as CP949. Short files with very little Korean can be misjudged. Other legacy encodings (accented Western text in Windows-1252, Japanese Shift_JIS, Chinese GBK) are not supported.</li>
+      <li>UTF-16 files (Excel’s “Unicode Text”) are recognised only if they have a BOM or contain some English letters or digits.</li>
+      <li>Real Excel workbooks (.xlsx, .xls) are not text files and are rejected.</li>
+      <li>The whole file is processed in browser memory, so files of several hundred MB may be slow or fail.</li>
+    </ul>
+  </section>
+
+  <footer class="site">
+    <p>Built and tested by AI (Claude). Found a wrong result? <a href="https://github.com/ghwnd8938-netizen/hangul-tools/issues">Report it</a>.</p>
+    <p><span id="support"></span></p>
+  </footer>
+</div>
+
+<script src="../../csv-fix/tool.js"></script>
+<script>
+(function () {
+  'use strict';
+  var C = window.CsvFix;
+  var $ = function (id) { return document.getElementById(id); };
+  var fileInput = $('file'), drop = $('drop'), encSel = $('enc');
+  var state = { name: '', bytes: null, detected: null, text: '' };
+
+  var EOL_LABEL = { CRLF: 'CRLF (Windows)', LF: 'LF (Mac/Linux)', CR: 'CR (classic Mac)', mixed: 'Mixed', none: 'None (single line)' };
+
+  // English version of CsvFix.encodingLabel (which returns Korean text).
+  function encLabel(det) {
+    var e = det.encoding;
+    if (e === 'utf-8') return det.hasBom ? 'UTF-8 with BOM' : 'UTF-8 (no BOM)';
+    if (e === 'euc-kr') return 'CP949 (EUC-KR)';
+    if (e === 'utf-16le') return 'UTF-16 LE' + (det.hasBom ? ' with BOM' : '');
+    if (e === 'utf-16be') return 'UTF-16 BE' + (det.hasBom ? ' with BOM' : '');
+    return String(e);
+  }
+
+  function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+
+  function formatSize(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1024 / 1024).toFixed(1) + ' MB';
+  }
+
+  function addMsg(text, cls) {
+    var p = document.createElement('p');
+    if (cls) p.className = cls;
+    p.textContent = text;
+    $('status').appendChild(p);
+  }
+
+  function renderPreview(rows) {
+    var box = $('preview');
+    box.textContent = '';
+    if (!rows.length) { box.textContent = '(empty file)'; return; }
+    var cols = 0;
+    rows.forEach(function (r) { if (r.length > cols) cols = r.length; });
+    var table = document.createElement('table');
+    rows.forEach(function (r, ri) {
+      var parent;
+      if (ri === 0) { parent = document.createElement('thead'); table.appendChild(parent); }
+      else {
+        parent = table.tBodies[0];
+        if (!parent) { parent = document.createElement('tbody'); table.appendChild(parent); }
+      }
+      var tr = document.createElement('tr');
+      var numCell = document.createElement(ri === 0 ? 'th' : 'td');
+      numCell.className = 'num';
+      numCell.textContent = String(ri + 1);
+      tr.appendChild(numCell);
+      for (var c = 0; c < cols; c++) {
+        var cell = document.createElement(ri === 0 ? 'th' : 'td');
+        var v = r[c] == null ? '' : r[c];
+        cell.textContent = C.truncate(v, 80);
+        tr.appendChild(cell);
+      }
+      parent.appendChild(tr);
+    });
+    box.appendChild(table);
+  }
+
+  var BINARY_MSG = {
+    zip: 'This looks like an Excel workbook (.xlsx) or a ZIP archive. This tool only fixes text files such as CSV, TSV and TXT. To turn an .xlsx file into a CSV, open it in Excel and use Save As → “CSV UTF-8 (Comma delimited)”.',
+    ole: 'This looks like an old Excel (.xls), Word (.doc) or Hangul (.hwp) document. This tool only fixes text files such as CSV, TSV and TXT.',
+    pdf: 'This is a PDF file. This tool only fixes text files such as CSV, TSV and TXT.'
+  };
+
+  function setDownloads(on) {
+    $('dl-bom').disabled = !on;
+    $('dl-nobom').disabled = !on;
+  }
+
+  function render() {
+    if (!state.bytes) return;
+    var choice = encSel.value;
+    var det = state.detected;
+    var enc = choice === 'auto' ? det.encoding : choice;
+    var hasBom = choice === 'auto' ? det.hasBom : (enc === 'utf-8' && det.hasBom && det.encoding === 'utf-8');
+    state.text = C.decode(state.bytes, enc);
+
+    $('result').hidden = false;
+    $('out-name').textContent = state.name;
+    $('out-enc').textContent = encLabel({ encoding: enc, hasBom: hasBom }) + (choice === 'auto' ? '' : ' · manual');
+    $('out-eol').textContent = EOL_LABEL[C.detectLineEnding(state.text)];
+    $('out-size').textContent = formatSize(state.bytes.length);
+
+    $('status').textContent = '';
+    if (state.bytes.length === 0) {
+      addMsg('The file is empty.', 'warn');
+    } else if (choice === 'auto') {
+      if (det.asciiOnly) addMsg('This file contains only basic English letters, digits and symbols (ASCII), so encoding problems cannot garble it.', 'ok');
+      else if (det.encoding === 'utf-8' && det.hasBom) {
+        if (det.confidence === 'low') addMsg('The file starts with a UTF-8 BOM, but part of its content is not valid UTF-8.', 'warn');
+        else addMsg('This file is already in the format Excel opens directly (UTF-8 with BOM).', 'ok');
+      }
+      else if (det.encoding === 'utf-8') addMsg('UTF-8 without a BOM: Excel for Windows will probably garble Korean (and any other non-English) text when you double-click the file. Click “Save for Excel”.', 'warn');
+      else if (det.encoding === 'euc-kr') addMsg('CP949 (EUC-KR) file, the legacy Korean encoding. It usually looks garbled in Excel on non-Korean Windows, in Google Sheets and in most programs, so convert it to UTF-8.', 'warn');
+      else addMsg(encLabel(det) + ' file. You can save it as UTF-8.', 'warn');
+      if (det.confidence === 'low') addMsg('The encoding could not be determined with confidence. If the preview looks garbled, choose one manually.', 'warn');
+    } else {
+      addMsg('Auto-detection found ' + encLabel(det) + '.');
+    }
+    var total = C.countReplacementChars(state.text);
+    var literal = Math.min(total, C.literalReplacementCount(state.bytes, enc));
+    var broken = total - literal;
+    if (broken > 0) addMsg(plural(broken, 'spot') + ' cannot be read with this encoding and ' + (broken === 1 ? 'is' : 'are') + ' shown as �. Try the other encoding. If you save it like this, ' + (broken === 1 ? 'that spot' : 'those spots') + ' will be saved as �.', 'err');
+    if (literal > 0) addMsg('The original file already contains ' + plural(literal, 'broken character') + ' (�). The original text was lost when the file was saved incorrectly at some point, and it cannot be recovered.', 'warn');
+    var nul = C.countNul(state.text);
+    if (nul > 0) addMsg('Found ' + plural(nul, 'NUL (zero) character') + '. This may not be a text file, or the encoding guess may be wrong.', 'warn');
+
+    renderPreview(C.parseCsvPreview(state.text, 10));
+    setDownloads(true);
+  }
+
+  function showBinary(kind) {
+    state.bytes = null;
+    state.text = '';
+    $('result').hidden = false;
+    $('out-name').textContent = state.name;
+    $('out-enc').textContent = 'Not a text file';
+    $('out-eol').textContent = '-';
+    $('out-size').textContent = formatSize(state.size);
+    $('status').textContent = '';
+    addMsg(BINARY_MSG[kind], 'err');
+    $('preview').textContent = '(no preview)';
+    encSel.value = 'auto';
+    encSel.disabled = true;
+    setDownloads(false);
+  }
+
+  var loadSeq = 0;
+  function loadFile(file) {
+    if (!file) return;
+    var seq = ++loadSeq;
+    $('status').textContent = '';
+    var reader = new FileReader();
+    reader.onload = function () {
+      if (seq !== loadSeq) return; // a newer file was chosen while this one was loading
+      try {
+        state.name = file.name;
+        var bytes = new Uint8Array(reader.result);
+        state.size = bytes.length;
+        var kind = C.sniffBinary(bytes);
+        if (kind) { showBinary(kind); return; }
+        state.bytes = bytes;
+        state.detected = C.detectEncoding(bytes);
+        encSel.value = 'auto';
+        encSel.disabled = false;
+        render();
+      } catch (e) {
+        state.bytes = null;
+        setDownloads(false);
+        $('preview').textContent = '';
+        $('result').hidden = false;
+        addMsg('Could not process the file: ' + (e && e.message ? e.message : e), 'err');
+      }
+    };
+    reader.onerror = function () {
+      if (seq !== loadSeq) return;
+      state.bytes = null;
+      setDownloads(false);
+      $('result').hidden = false;
+      addMsg('Could not read the file.', 'err');
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function download(withBom) {
+    if (!state.bytes) return;
+    var bytes = withBom ? C.toUtf8Bom(state.text) : C.toUtf8NoBom(state.text);
+    var name = C.fixedFileName(state.name, withBom ? '_fixed' : '_utf8');
+    var type = /\.csv$/.test(name) ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8';
+    var url = URL.createObjectURL(new Blob([bytes], { type: type }));
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  fileInput.addEventListener('change', function () { loadFile(fileInput.files && fileInput.files[0]); });
+  encSel.addEventListener('change', render);
+  $('dl-bom').addEventListener('click', function () { download(true); });
+  $('dl-nobom').addEventListener('click', function () { download(false); });
+
+  ['dragenter', 'dragover'].forEach(function (t) {
+    drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('over'); });
+  });
+  drop.addEventListener('dragleave', function (e) {
+    // Moving over a child element (text, file input) also fires dragleave; ignore that.
+    if (!drop.contains(e.relatedTarget)) drop.classList.remove('over');
+  });
+  drop.addEventListener('drop', function (e) {
+    e.preventDefault();
+    drop.classList.remove('over');
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    loadFile(f);
+  });
+  // Dropping a file outside the zone should not navigate away from the page.
+  window.addEventListener('dragover', function (e) { e.preventDefault(); });
+  window.addEventListener('drop', function (e) { e.preventDefault(); });
+})();
+</script>
+</body>
+</html>

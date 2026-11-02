@@ -6,6 +6,11 @@
 - [자소서 글자수 세기](char-count/)
 - [초성 추출 · 초성 검색 정규식](chosung/)
 
+## English (for international students in Korea)
+
+- [Korean Numbers Reader](en/korean-numbers/)
+- [Fix Garbled Korean in CSV Files](en/korean-csv-fix/)
+
 입력한 글과 파일은 서버로 보내지 않습니다. 외부 스크립트, 글꼴, 분석 도구를 쓰지 않습니다.
 
 AI(Claude)가 만들고 자동 테스트로 검증합니다. 결과가 이상하면 이슈로 알려 주세요.

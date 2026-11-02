@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korean Tools for International Students – Free, Browser-Only</title>
+<meta name="description" content="Free tools for international students and foreigners in Korea: read Korean numbers, prices and times, and fix garbled Korean characters in CSV files. Everything runs in your browser.">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+  .tools { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .tools a { display: block; text-decoration: none; color: inherit; }
+  .tools a:hover .card, .tools a:focus-visible .card { border-color: var(--accent); }
+  .tools h2 { margin: 0 0 4px; font-size: 18px; color: var(--accent); }
+  .tools p { margin: 0; color: var(--muted); }
+  .lang { font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <span></span>
+    <a class="home lang" href="../" hreflang="ko" lang="ko">한국어</a>
+  </header>
+  <h1>Korean tools for international students</h1>
+  <p class="lead">Small, free tools for everyday Korean problems when you study or live in Korea.</p>
+  <p class="privacy">Nothing you type or upload is sent anywhere. Every tool runs entirely in your browser.</p>
+
+  <ul class="tools">
+    <li><a href="korean-numbers/"><div class="card">
+      <h2>Korean Numbers Reader</h2>
+      <p>Read prices (35,000원 → 삼만 오천 원), times (3:45 → 세 시 사십오 분) and phone numbers, with romanization and when to use Sino vs native numbers.</p>
+    </div></a></li>
+    <li><a href="korean-csv-fix/"><div class="card">
+      <h2>Fix Garbled Korean in CSV Files</h2>
+      <p>A CSV from a Korean source shows broken characters? Detect the encoding and save a copy that opens correctly in Excel or Google Sheets.</p>
+    </div></a></li>
+  </ul>
+
+  <footer class="site">
+    Built and tested by AI (Claude). Found a wrong result? <a href="https://github.com/ghwnd8938-netizen/hangul-tools/issues">Report it</a>.<br>
+    <span id="support"></span>
+  </footer>
+</div>
+</body>
+</html>
