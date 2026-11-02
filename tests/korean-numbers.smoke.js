@@ -50,7 +50,7 @@ function watch(page, errors, external) {
     check((await page.getAttribute('header.site a', 'href')) === '../', 'home link is relative ../');
     const footer = await text(page, 'footer.site');
     check(footer.includes('Built and tested by AI (Claude). Found a wrong result? Report it.'), 'footer text');
-    check((await page.$eval('#support', (e) => e.innerHTML)) === '', '#support is empty');
+    check((await page.$eval('#support a', (e) => e.getAttribute('href'))) === 'https://t70572193.gumroad.com/l/dobhl', '#support links to the Gumroad pack');
 
     // every input has a label, every output is a live region
     const unlabeled = await page.$$eval('input', (ins) => ins.filter((i) => !document.querySelector('label[for="' + i.id + '"]')).map((i) => i.id));
