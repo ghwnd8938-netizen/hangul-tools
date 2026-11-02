@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한국어 도구 모음 - 브라우저에서만 동작하는 무료 도구</title>
+<meta name="description" content="엑셀 CSV 한글 깨짐 고치기, 자소서 글자수·바이트 세기, 초성 추출처럼 자주 겪는 한국어 문제를 브라우저 안에서 바로 해결하는 무료 도구 모음입니다.">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .tools { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .tools a { display: block; text-decoration: none; color: inherit; }
+  .tools a:hover .card, .tools a:focus-visible .card { border-color: var(--accent); }
+  .tools h2 { margin: 0 0 4px; font-size: 18px; color: var(--accent); }
+  .tools p { margin: 0; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>한국어 도구 모음</h1>
+  <p class="lead">자주 겪는 한국어 문제를 브라우저 안에서 바로 해결하는 무료 도구입니다.</p>
+  <p class="privacy">모든 도구는 입력한 글과 파일을 서버로 보내지 않습니다. 처리는 사용 중인 브라우저 안에서만 일어납니다.</p>
+
+  <ul class="tools">
+    <li><a href="csv-fix/"><div class="card">
+      <h2>엑셀 CSV 한글 깨짐 고치기</h2>
+      <p>엑셀에서 열면 한글이 깨지는 CSV를 엑셀이 읽을 수 있는 UTF-8(BOM) 파일로 바꿉니다.</p>
+    </div></a></li>
+    <li><a href="char-count/"><div class="card">
+      <h2>자소서 글자수 세기</h2>
+      <p>공백 포함·제외 글자수, 바이트, 줄바꿈 계산 방식, 제한 대비 남은 글자를 실시간으로 보여 줍니다.</p>
+    </div></a></li>
+    <li><a href="chosung/"><div class="card">
+      <h2>초성 추출 · 초성 검색 정규식</h2>
+      <p>한글 문장에서 초성만 뽑고, "ㅎㄱㄷ" 같은 초성 검색용 정규식을 만들어 바로 시험해 봅니다.</p>
+    </div></a></li>
+  </ul>
+
+  <footer class="site">
+    AI(Claude)가 만들고 자동 테스트로 검증한 무료 도구입니다. 결과가 이상하면 <a href="https://github.com/ghwnd8938-netizen/hangul-tools/issues">오류 제보</a>해 주세요.<br>
+    <span id="support"></span>
+  </footer>
+</div>
+</body>
+</html>

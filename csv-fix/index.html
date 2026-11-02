@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>엑셀 CSV 한글 깨짐 고치기 - 무료 온라인 도구</title>
+<meta name="description" content="엑셀에서 CSV를 열면 한글이 깨질 때, 파일 인코딩(UTF-8/CP949)을 확인하고 엑셀에서 바로 열리는 UTF-8(BOM) 파일로 바꿔 줍니다. 파일은 브라우저 밖으로 전송되지 않습니다.">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  :root { color-scheme: light dark; }
+  .wrap { word-break: keep-all; overflow-wrap: break-word; }
+  .drop input[type=file] { display: block; margin: 12px auto 0; max-width: 100%; font: inherit; color: var(--text); }
+  .drop p { margin: 0; }
+  #result[hidden] { display: none; }
+  #result { margin-top: var(--gap); }
+  #result .stats { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  .stat .v { font-size: 16px; line-height: 1.4; }
+  #out-name { overflow-wrap: anywhere; }
+  .field { margin: var(--gap) 0; }
+  .field select { max-width: 20em; }
+  #status { margin: var(--gap) 0; }
+  #status p { margin: 0 0 6px; }
+  .preview { overflow: auto; max-height: 360px; border: 1px solid var(--border); border-radius: 8px; margin: 0 0 var(--gap); }
+  .preview:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .preview table { width: auto; min-width: 100%; }
+  .preview th, .preview td { white-space: pre; vertical-align: top; font-size: 14px; }
+  .preview thead th { background: var(--code-bg); position: sticky; top: 0; }
+  .preview .num { width: 1%; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #preview-title { margin: 0 0 8px; font-size: 16px; }
+  .hint { font-size: 14px; color: var(--muted); margin: 6px 0 0; }
+  .actions { margin-top: 4px; }
+  .faq dt { font-weight: 700; margin-top: 12px; }
+  .faq dd { margin: 4px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="home" href="../">← 도구 모음</a>
+  </header>
+  <h1>엑셀 CSV 한글 깨짐 고치기</h1>
+  <p class="lead">CSV 파일의 인코딩을 확인해 엑셀에서 한글이 깨지지 않는 UTF-8(BOM) 파일로 바꿔 줍니다.</p>
+
+  <section class="card" aria-label="CSV 변환 도구">
+    <div class="drop" id="drop">
+      <p>CSV·TSV·TXT 파일을 여기에 끌어다 놓거나 아래에서 선택하세요.</p>
+      <label for="file" class="sr-only">CSV 파일 선택</label>
+      <input type="file" id="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain">
+    </div>
+
+    <div id="result" hidden>
+      <div class="stats">
+        <div class="stat"><div class="k">파일</div><div class="v" id="out-name">-</div></div>
+        <div class="stat"><div class="k">감지된 인코딩</div><div class="v" id="out-enc">-</div></div>
+        <div class="stat"><div class="k">줄바꿈</div><div class="v" id="out-eol">-</div></div>
+        <div class="stat"><div class="k">크기</div><div class="v" id="out-size">-</div></div>
+      </div>
+
+      <div class="field">
+        <label for="enc">인코딩 직접 선택</label>
+        <select id="enc">
+          <option value="auto">자동</option>
+          <option value="utf-8">UTF-8</option>
+          <option value="euc-kr">CP949 (EUC-KR)</option>
+        </select>
+        <p class="hint">미리보기의 한글이 깨져 보이면 다른 인코딩을 골라 보세요.</p>
+      </div>
+
+      <div id="status" role="status" aria-live="polite"></div>
+
+      <h2 id="preview-title">미리보기 (처음 10행)</h2>
+      <div class="preview" id="preview" tabindex="0" role="region" aria-labelledby="preview-title"></div>
+
+      <div class="row actions">
+        <button type="button" id="dl-bom" disabled>엑셀용으로 저장 (UTF-8 BOM)</button>
+        <button type="button" id="dl-nobom" class="secondary" disabled>UTF-8 (BOM 없음)으로 저장</button>
+      </div>
+      <p class="hint">내용과 줄바꿈은 그대로 두고 인코딩만 바꿉니다. BOM 없는 파일은 구글 시트·프로그램용입니다.</p>
+    </div>
+
+    <p class="privacy">파일은 서버로 전송되지 않고 이 브라우저 안에서만 처리됩니다.</p>
+  </section>
+
+  <section>
+    <h2>왜 엑셀에서 한글이 깨지나요?</h2>
+    <p>CSV는 글자만 담긴 텍스트 파일이라, 어떤 인코딩으로 저장했는지 파일 안에 적혀 있지 않습니다. Windows용 엑셀은 CSV를 더블클릭해 열 때 파일 맨 앞에 UTF-8 표시(BOM, 바이트 <code>EF BB BF</code>)가 없으면 시스템 기본 코드 페이지, 한국어 Windows에서는 CP949로 읽습니다. 그런데 구글 시트를 비롯한 많은 웹 서비스와 프로그램은 CSV를 BOM 없는 UTF-8로 내보냅니다. 이 파일을 CP949로 읽으면 ‘이름’이 ‘?대쫫’처럼 알아볼 수 없는 글자로 보입니다.</p>
+    <p>반대로 오래된 업무 시스템이나 한국어 Windows 엑셀의 ‘CSV (쉼표로 분리)’ 저장은 CP949로 파일을 만드는 경우가 많아, 이런 파일은 구글 시트나 프로그램에서 깨집니다. 어느 쪽이든 UTF-8로 바꾸고 엑셀용이면 BOM을 붙이면 됩니다.</p>
+
+    <h2>사용 방법</h2>
+    <ol>
+      <li>파일을 끌어다 놓거나 ‘파일 선택’으로 고릅니다.</li>
+      <li>감지된 인코딩과 미리보기를 확인합니다. 한글이 깨져 보이면 ‘인코딩 직접 선택’을 바꿔 봅니다.</li>
+      <li>엑셀에서 열 파일이면 ‘엑셀용으로 저장’, 구글 시트나 프로그램에서 쓸 파일이면 ‘BOM 없음’으로 저장합니다.</li>
+    </ol>
+
+    <h2>자주 묻는 질문</h2>
+    <dl class="faq">
+      <dt>내용이 바뀌지는 않나요?</dt>
+      <dd>글자, 쉼표, 따옴표, 줄바꿈 방식(CRLF/LF)은 그대로 두고 인코딩과 BOM만 바꿉니다.</dd>
+      <dt>CP949(EUC-KR)로 바꾸는 기능은 없나요?</dt>
+      <dd>브라우저에 내장된 문자 인코더는 UTF-8만 지원해서 제공하지 않습니다. Excel 2016 이상(Microsoft 365 포함)은 BOM이 붙은 UTF-8 CSV를 정상적으로 엽니다.</dd>
+      <dt>BOM 없는 UTF-8은 언제 쓰나요?</dt>
+      <dd>구글 시트는 BOM이 없어도 UTF-8로 읽습니다. 일부 프로그램이나 스크립트는 BOM을 첫 칸 글자의 일부로 읽어 첫 열 이름이 달라지므로, 그런 곳에는 BOM 없는 파일이 낫습니다. 맥용 엑셀도 BOM이 없으면 한글이 깨질 수 있으니 엑셀에서 열 파일은 ‘엑셀용’으로 저장하세요.</dd>
+      <dt>변환했는데도 깨져요.</dt>
+      <dd>글자가 ‘?’나 ‘�’로 바뀐 채 저장된 파일은 원래 정보가 사라져 되돌릴 수 없으니, 원본 파일을 다시 받아 변환하세요. 엑셀의 ‘데이터 → 텍스트/CSV에서’ 가져오기를 쓰면 인코딩을 직접 고를 수도 있습니다.</dd>
+    </dl>
+
+    <h2>한계</h2>
+    <ul>
+      <li>자동 감지는 추정입니다. UTF-8 규칙에 맞으면 UTF-8, 아니면 CP949로 봅니다. 한글이 거의 없는 짧은 파일이나 Shift_JIS·GBK 같은 다른 나라 구형 인코딩은 잘못 판단할 수 있습니다.</li>
+      <li>UTF-16 파일(엑셀 ‘유니코드 텍스트’)은 BOM이 있거나 영문·숫자가 섞여 있을 때만 인식합니다.</li>
+      <li>엑셀 통합 문서(.xlsx)는 텍스트 파일이 아니라서 처리하지 않습니다.</li>
+      <li>파일 전체를 브라우저 메모리에서 처리하므로 수백 MB 이상은 느리거나 실패할 수 있습니다.</li>
+    </ul>
+  </section>
+
+  <footer class="site">
+    <p>AI(Claude)가 만들고 자동 테스트로 검증한 무료 도구입니다. 결과가 이상하면 <a href="https://github.com/ghwnd8938-netizen/hangul-tools/issues">오류 제보</a>해 주세요.</p>
+    <p><span id="support"></span></p>
+  </footer>
+</div>
+
+<script src="tool.js"></script>
+<script>
+(function () {
+  'use strict';
+  var C = window.CsvFix;
+  var $ = function (id) { return document.getElementById(id); };
+  var fileInput = $('file'), drop = $('drop'), encSel = $('enc');
+  var state = { name: '', bytes: null, detected: null, text: '' };
+
+  var EOL_LABEL = { CRLF: 'CRLF (Windows)', LF: 'LF (맥·리눅스)', CR: 'CR (구형 맥)', mixed: '섞여 있음', none: '없음 (한 줄)' };
+
+  function formatSize(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1024 / 1024).toFixed(1) + ' MB';
+  }
+
+  function addMsg(text, cls) {
+    var p = document.createElement('p');
+    if (cls) p.className = cls;
+    p.textContent = text;
+    $('status').appendChild(p);
+  }
+
+  function renderPreview(rows) {
+    var box = $('preview');
+    box.textContent = '';
+    if (!rows.length) { box.textContent = '(빈 파일)'; return; }
+    var cols = 0;
+    rows.forEach(function (r) { if (r.length > cols) cols = r.length; });
+    var table = document.createElement('table');
+    rows.forEach(function (r, ri) {
+      var parent;
+      if (ri === 0) { parent = document.createElement('thead'); table.appendChild(parent); }
+      else {
+        parent = table.tBodies[0];
+        if (!parent) { parent = document.createElement('tbody'); table.appendChild(parent); }
+      }
+      var tr = document.createElement('tr');
+      var numCell = document.createElement(ri === 0 ? 'th' : 'td');
+      numCell.className = 'num';
+      numCell.textContent = String(ri + 1);
+      tr.appendChild(numCell);
+      for (var c = 0; c < cols; c++) {
+        var cell = document.createElement(ri === 0 ? 'th' : 'td');
+        var v = r[c] == null ? '' : r[c];
+        cell.textContent = C.truncate(v, 80);
+        tr.appendChild(cell);
+      }
+      parent.appendChild(tr);
+    });
+    box.appendChild(table);
+  }
+
+  var BINARY_MSG = {
+    zip: '엑셀 통합 문서(.xlsx)나 압축(zip) 파일로 보입니다. 이 도구는 CSV·TSV·TXT 같은 텍스트 파일만 고칩니다. xlsx를 CSV로 만들려면 엑셀의 ‘다른 이름으로 저장’에서 ‘CSV UTF-8(쉼표로 분리)’을 고르세요.',
+    ole: '예전 엑셀(.xls)이나 한글(.hwp) 같은 문서 파일로 보입니다. 이 도구는 CSV·TSV·TXT 같은 텍스트 파일만 고칩니다.',
+    pdf: 'PDF 파일입니다. 이 도구는 CSV·TSV·TXT 같은 텍스트 파일만 고칩니다.'
+  };
+
+  function setDownloads(on) {
+    $('dl-bom').disabled = !on;
+    $('dl-nobom').disabled = !on;
+  }
+
+  function render() {
+    if (!state.bytes) return;
+    var choice = encSel.value;
+    var det = state.detected;
+    var enc = choice === 'auto' ? det.encoding : choice;
+    var hasBom = choice === 'auto' ? det.hasBom : (enc === 'utf-8' && det.hasBom && det.encoding === 'utf-8');
+    state.text = C.decode(state.bytes, enc);
+
+    $('result').hidden = false;
+    $('out-name').textContent = state.name;
+    $('out-enc').textContent = C.encodingLabel({ encoding: enc, hasBom: hasBom }) + (choice === 'auto' ? '' : ' · 직접 선택');
+    $('out-eol').textContent = EOL_LABEL[C.detectLineEnding(state.text)];
+    $('out-size').textContent = formatSize(state.bytes.length);
+
+    $('status').textContent = '';
+    if (state.bytes.length === 0) {
+      addMsg('빈 파일입니다.', 'warn');
+    } else if (choice === 'auto') {
+      if (det.asciiOnly) addMsg('영문·숫자·기호만 있는 파일이라 인코딩 때문에 깨지지는 않습니다.', 'ok');
+      else if (det.encoding === 'utf-8' && det.hasBom) {
+        if (det.confidence === 'low') addMsg('UTF-8 BOM이 붙어 있지만 내용 일부가 UTF-8 규칙에 맞지 않습니다.', 'warn');
+        else addMsg('이미 엑셀에서 바로 열리는 형식(UTF-8 BOM)입니다.', 'ok');
+      }
+      else if (det.encoding === 'utf-8') addMsg('UTF-8이지만 BOM이 없어 Windows 엑셀에서 더블클릭해 열면 한글이 깨집니다. ‘엑셀용으로 저장’을 누르세요.', 'warn');
+      else if (det.encoding === 'euc-kr') addMsg('CP949(EUC-KR) 파일입니다. 구글 시트나 프로그램에서 깨질 수 있어 UTF-8로 바꾸는 것이 좋습니다.', 'warn');
+      else addMsg(C.encodingLabel(det) + ' 파일입니다. UTF-8로 바꿔 저장할 수 있습니다.', 'warn');
+      if (det.confidence === 'low') addMsg('인코딩을 확실히 판단하기 어렵습니다. 미리보기가 깨져 보이면 직접 선택해 보세요.', 'warn');
+    } else {
+      addMsg('자동 감지 결과는 ' + C.encodingLabel(det) + '입니다.');
+    }
+    var total = C.countReplacementChars(state.text);
+    var literal = Math.min(total, C.literalReplacementCount(state.bytes, enc));
+    var broken = total - literal;
+    if (broken > 0) addMsg('이 인코딩으로 읽을 수 없는 부분 ' + broken + '곳이 �로 표시됩니다. 다른 인코딩을 골라 보세요. 이대로 저장하면 그 부분은 �로 저장됩니다.', 'err');
+    if (literal > 0) addMsg('원본 파일에 이미 깨진 글자(�)가 ' + literal + '개 들어 있습니다. 예전에 잘못 저장되면서 원래 글자가 사라진 것이라 되돌릴 수 없습니다.', 'warn');
+    var nul = C.countNul(state.text);
+    if (nul > 0) addMsg('NUL(0) 문자가 ' + nul + '개 있습니다. 텍스트 파일이 아니거나 인코딩 판단이 틀렸을 수 있습니다.', 'warn');
+
+    renderPreview(C.parseCsvPreview(state.text, 10));
+    setDownloads(true);
+  }
+
+  function showBinary(kind) {
+    state.bytes = null;
+    state.text = '';
+    $('result').hidden = false;
+    $('out-name').textContent = state.name;
+    $('out-enc').textContent = '텍스트 아님';
+    $('out-eol').textContent = '-';
+    $('out-size').textContent = formatSize(state.size);
+    $('status').textContent = '';
+    addMsg(BINARY_MSG[kind], 'err');
+    $('preview').textContent = '(미리보기 없음)';
+    encSel.value = 'auto';
+    encSel.disabled = true;
+    setDownloads(false);
+  }
+
+  var loadSeq = 0;
+  function loadFile(file) {
+    if (!file) return;
+    var seq = ++loadSeq;
+    $('status').textContent = '';
+    var reader = new FileReader();
+    reader.onload = function () {
+      if (seq !== loadSeq) return; // a newer file was chosen while this one was loading
+      try {
+        state.name = file.name;
+        var bytes = new Uint8Array(reader.result);
+        state.size = bytes.length;
+        var kind = C.sniffBinary(bytes);
+        if (kind) { showBinary(kind); return; }
+        state.bytes = bytes;
+        state.detected = C.detectEncoding(bytes);
+        encSel.value = 'auto';
+        encSel.disabled = false;
+        render();
+      } catch (e) {
+        state.bytes = null;
+        setDownloads(false);
+        $('preview').textContent = '';
+        $('result').hidden = false;
+        addMsg('파일을 처리하지 못했습니다: ' + (e && e.message ? e.message : e), 'err');
+      }
+    };
+    reader.onerror = function () {
+      if (seq !== loadSeq) return;
+      state.bytes = null;
+      setDownloads(false);
+      $('result').hidden = false;
+      addMsg('파일을 읽지 못했습니다.', 'err');
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function download(withBom) {
+    if (!state.bytes) return;
+    var bytes = withBom ? C.toUtf8Bom(state.text) : C.toUtf8NoBom(state.text);
+    var name = C.fixedFileName(state.name, withBom ? '_fixed' : '_utf8');
+    var type = /\.csv$/.test(name) ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8';
+    var url = URL.createObjectURL(new Blob([bytes], { type: type }));
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  fileInput.addEventListener('change', function () { loadFile(fileInput.files && fileInput.files[0]); });
+  encSel.addEventListener('change', render);
+  $('dl-bom').addEventListener('click', function () { download(true); });
+  $('dl-nobom').addEventListener('click', function () { download(false); });
+
+  ['dragenter', 'dragover'].forEach(function (t) {
+    drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('over'); });
+  });
+  drop.addEventListener('dragleave', function (e) {
+    // Moving over a child element (text, file input) also fires dragleave; ignore that.
+    if (!drop.contains(e.relatedTarget)) drop.classList.remove('over');
+  });
+  drop.addEventListener('drop', function (e) {
+    e.preventDefault();
+    drop.classList.remove('over');
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    loadFile(f);
+  });
+  // Dropping a file outside the zone should not navigate away from the page.
+  window.addEventListener('dragover', function (e) { e.preventDefault(); });
+  window.addEventListener('drop', function (e) { e.preventDefault(); });
+})();
+</script>
+</body>
+</html>

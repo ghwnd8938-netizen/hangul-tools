@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ghwnd8938-netizen.github.io/hangul-tools/sitemap.xml

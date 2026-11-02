@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>자소서 글자수 세기 (공백 포함·제외, 바이트) - 무료 온라인 도구</title>
+<meta name="description" content="자기소개서 글자수를 공백 포함·제외, 단어 수, 줄 수, 바이트(한글 2바이트·UTF-8)로 입력하는 즉시 셉니다. 줄바꿈을 1자·2자·0자로 세는 방식을 고를 수 있고, 글은 브라우저 밖으로 전송되지 않습니다.">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  :root { color-scheme: light dark; }
+  [hidden] { display: none !important; }
+  .card .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 16px 0 8px; }
+  @media (min-width: 560px) { .card .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .lead, .stat .k, .note, .msg, .limit-text, .privacy, .explain, footer.site { word-break: keep-all; overflow-wrap: anywhere; }
+  .stat .v { overflow-wrap: anywhere; }
+  .stat .v small { font-size: 14px; font-weight: 600; color: var(--muted); margin-left: 2px; }
+  .note { font-size: 14px; color: var(--muted); margin: 4px 0 0; }
+  .tools { margin-top: 10px; }
+  .msg { font-size: 14px; color: var(--muted); min-height: 1.6em; margin: 6px 0 0; }
+  .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+  .settings > div { min-width: 0; }
+  .limit-inputs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .limit-inputs input { flex: 0 0 7.5em; width: 7.5em; }
+  .limit-inputs select { flex: 1 1 9em; width: auto; min-width: 0; }
+  .limit-box { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
+  .limit-text { font-weight: 700; margin: 0 0 8px; font-variant-numeric: tabular-nums; }
+  .bar { height: 10px; background: var(--code-bg); border-radius: 5px; overflow: hidden; }
+  .bar .fill { height: 100%; width: 0; background: currentColor; border-radius: 5px; }
+  textarea#text { min-height: 260px; }
+  button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px; }
+  .explain h3 { font-size: 16px; margin: 18px 0 4px; }
+  .explain p, .explain ul { margin: 0 0 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="home" href="../">← 도구 모음</a>
+  </header>
+
+  <main>
+    <h1>자소서 글자수 세기</h1>
+    <p class="lead">자기소개서를 붙여 넣거나 입력하면 공백 포함·제외 글자수와 바이트를 바로 보여 줍니다.</p>
+
+    <section class="card" aria-label="글자수 세기 도구">
+      <label for="text">자기소개서 내용</label>
+      <textarea id="text" spellcheck="false" placeholder="여기에 자기소개서를 붙여 넣거나 입력하세요."></textarea>
+
+      <div class="row tools">
+        <button type="button" id="btn-tidy">공백·줄바꿈 정리</button>
+        <button type="button" id="btn-copy" class="secondary">복사</button>
+        <button type="button" id="btn-clear" class="secondary">지우기</button>
+        <button type="button" id="btn-undo" class="secondary" hidden>되돌리기</button>
+      </div>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+
+      <div class="stats" id="stats">
+        <div class="stat"><div class="k">글자수 (공백 포함)</div><div class="v"><span id="c-with">0</span><small>자</small></div></div>
+        <div class="stat"><div class="k">글자수 (공백 제외)</div><div class="v"><span id="c-without">0</span><small>자</small></div></div>
+        <div class="stat"><div class="k">단어 수 (어절)</div><div class="v"><span id="c-words">0</span><small>개</small></div></div>
+        <div class="stat"><div class="k">줄 수</div><div class="v"><span id="c-lines">0</span><small>줄</small></div></div>
+        <div class="stat"><div class="k">바이트 (한글 2바이트)</div><div class="v"><span id="c-euckr">0</span><small>B</small></div></div>
+        <div class="stat"><div class="k">바이트 (UTF-8)</div><div class="v"><span id="c-utf8">0</span><small>B</small></div></div>
+      </div>
+      <p class="note">공백 = 스페이스, 탭, 줄바꿈, NBSP(U+00A0), 전각 공백(U+3000) 등 유니코드 공백 문자와 BOM(U+FEFF). 폭 없는 공백(U+200B)과 한글 채움 문자(U+3164)는 글자로 셉니다.
+        한글 2바이트 방식 = ASCII(영문·숫자·기본 기호·스페이스) 1바이트, 한글·한자·전각 문자 등 그 밖의 문자 2바이트. 이모지는 내부적으로 두 단위(UTF-16)라 4바이트이고, 👨‍👩‍👧처럼 여러 개가 합쳐진 이모지는 구성 문자를 모두 더해 16바이트가 됩니다.</p>
+      <p class="note" id="fallback-note" hidden>이 브라우저는 글자 분리 기능(Intl.Segmenter)을 지원하지 않아, 이모지·결합 문자는 근사 규칙으로 셉니다.</p>
+
+      <div class="settings">
+        <div>
+          <label for="newline">줄바꿈(Enter) 세는 방법</label>
+          <select id="newline">
+            <option value="1">1자로 셈 (기본)</option>
+            <option value="2">2자로 셈 (CRLF 방식)</option>
+            <option value="0">세지 않음 (0자)</option>
+          </select>
+        </div>
+        <div>
+          <label for="limit">제한 (선택)</label>
+          <div class="limit-inputs">
+            <input type="text" id="limit" inputmode="numeric" autocomplete="off" placeholder="예: 500" aria-describedby="limit-text">
+            <select id="mode" aria-label="제한 기준">
+              <option value="with">공백 포함 (자)</option>
+              <option value="without">공백 제외 (자)</option>
+              <option value="euckr">바이트 (한글 2바이트)</option>
+              <option value="utf8">바이트 (UTF-8)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="limit-box" id="limit-box" hidden>
+        <p class="limit-text" id="limit-text"></p>
+        <div class="bar" id="limit-bar" aria-hidden="true"><div class="fill" id="limit-fill"></div></div>
+      </div>
+      <p class="sr-only" id="limit-alert" aria-live="polite"></p>
+
+      <p class="privacy">입력한 글은 서버로 전송되지 않고, 이 브라우저 안에서만 계산·저장(localStorage)됩니다.</p>
+    </section>
+
+    <section class="explain">
+      <h2>사이트마다 글자수가 다른 이유</h2>
+      <p>세는 기준이 다르면 같은 글도 숫자가 달라집니다. 차이는 주로 세 곳에서 생깁니다.</p>
+      <ul>
+        <li><strong>공백</strong>: 띄어쓰기와 줄바꿈을 글자로 넣느냐(공백 포함), 빼느냐(공백 제외).</li>
+        <li><strong>줄바꿈</strong>: 입력란 안에서는 줄바꿈이 한 문자(LF)지만, HTML 폼으로 제출하면 CR+LF 두 문자로 바뀌어 전송됩니다(HTML 표준). 그래서 받은 글을 서버에서 세는 곳은 Enter 한 번을 2자(2바이트)로 셀 수 있고, 입력 화면에서 바로 세는 곳은 1자로 셀 수 있습니다. 아예 빼고 세는 곳도 있습니다.</li>
+        <li><strong>바이트</strong>: 예전 한글 인코딩(EUC-KR) 방식은 한글 한 자를 2바이트, 영문·숫자를 1바이트로 칩니다. UTF-8로 세면 한글은 3바이트입니다.</li>
+      </ul>
+
+      <h2>사용 방법</h2>
+      <p>글을 붙여 넣으면 바로 계산됩니다. 지원하는 사이트가 Enter를 어떻게 세는지 안내하고 있다면 줄바꿈 설정을 맞추고, 제한(예: 500자, 1000바이트)과 기준을 넣으면 남은 양과 비율을 보여 줍니다. 90% 이상이면 ‘주의’, 넘치면 ‘초과’로 표시합니다. 글은 서버로 보내지 않고 이 브라우저에만 저장되어 새로고침해도 남으니, 공용 PC라면 다 쓴 뒤 ‘지우기’를 누르세요.</p>
+
+      <h2>자주 묻는 질문</h2>
+      <h3>Q. 지원 사이트에 붙여 넣었더니 숫자가 달라요.</h3>
+      <p>최종 기준은 제출하는 사이트입니다. 줄바꿈 세는 방법(1자·2자·0자)을 바꿔 보고, 이모지나 특수문자가 들어 있는지 확인해 보세요. 그래도 다르면 제한보다 조금 여유 있게 쓰세요.</p>
+      <h3>Q. 1000바이트면 한글로 몇 자인가요?</h3>
+      <p>한글 2바이트 방식이면 공백 없이 최대 500자입니다. 스페이스는 1바이트, 줄바꿈은 설정에 따라 0~2바이트가 더해집니다. UTF-8로 세는 곳이라면 한글은 최대 333자입니다.</p>
+      <h3>Q. 이모지나 특수문자는 어떻게 세나요?</h3>
+      <p>화면에 한 글자로 보이면 1자로 셉니다(👨‍👩‍👧, 🇰🇷 포함). 코드 단위로 세는 사이트는 이모지 하나를 2자 이상으로 세고, 이모지는 EUC-KR에 없는 문자라 저장되지 않거나 깨질 수 있으니 자소서에는 피하는 편이 안전합니다.</p>
+      <h3>Q. ‘공백·줄바꿈 정리’는 무엇을 바꾸나요?</h3>
+      <p>각 줄 끝의 공백을 지우고, 연달아 있는 빈 줄(공백만 있는 줄 포함)을 한 줄로 줄이며, 글 맨 앞·뒤의 빈 줄을 없앱니다. 문장 사이 띄어쓰기와 줄 앞 들여쓰기는 그대로 둡니다. 바로 ‘되돌리기’할 수 있습니다.</p>
+
+      <h2>한계</h2>
+      <p>채용 사이트마다의 실제 계산 방식은 확인할 수 없어 숫자는 참고용입니다. 한글 2바이트 계산은 위 규칙을 따르는 근사치로, 실제 EUC-KR에 없는 문자(이모지 등)도 규칙대로 셉니다. 단어 수는 띄어쓰기 기준 어절 수입니다.</p>
+    </section>
+  </main>
+
+  <footer class="site">
+    <p>AI(Claude)가 만들고 자동 테스트로 검증한 무료 도구입니다. 결과가 이상하면 <a href="https://github.com/ghwnd8938-netizen/hangul-tools/issues">오류 제보</a>해 주세요.</p>
+    <p><span id="support"></span></p>
+  </footer>
+</div>
+
+<script src="tool.js"></script>
+<script>
+(function () {
+  'use strict';
+  var CC = window.CharCount;
+  var STORE_KEY = 'hangul-tools:char-count:v1';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var ta = $('text'), nlSel = $('newline'), limitIn = $('limit'), modeSel = $('mode');
+  var msg = $('msg'), undoBtn = $('btn-undo');
+  var out = {
+    withSpaces: $('c-with'), withoutSpaces: $('c-without'), words: $('c-words'),
+    lines: $('c-lines'), eucKrBytes: $('c-euckr'), utf8Bytes: $('c-utf8')
+  };
+  var undoText = null;
+  var lastLevel = null;
+  var saveTimer = null, renderTimer = null, saveWarned = false;
+
+  if (!CC.nativeSegmenter) $('fallback-note').hidden = false;
+
+  function fmt(n) { return n.toLocaleString('ko-KR'); }
+
+  function setMsg(text) { msg.textContent = text; }
+
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (typeof s.text === 'string') ta.value = s.text;
+      if (s.newline === '0' || s.newline === '1' || s.newline === '2') nlSel.value = s.newline;
+      if (typeof s.limit === 'string') limitIn.value = s.limit;
+      if (s.mode && modeSel.querySelector('option[value="' + s.mode + '"]')) modeSel.value = s.mode;
+    } catch (e) { /* 저장소를 쓸 수 없는 환경: 무시 */ }
+  }
+
+  function saveNow() {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    try {
+      window.localStorage.setItem(STORE_KEY, JSON.stringify({
+        text: ta.value, newline: nlSel.value, limit: limitIn.value, mode: modeSel.value
+      }));
+    } catch (e) {
+      if (!saveWarned && ta.value) {
+        saveWarned = true;
+        setMsg('브라우저 저장소를 쓸 수 없어 자동 저장이 되지 않습니다. 새로고침 전에 따로 보관해 주세요.');
+      }
+    }
+  }
+
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNow, 300);
+  }
+
+  function render() {
+    renderTimer = null;
+    var c = CC.count(ta.value, { newline: Number(nlSel.value) });
+    for (var k in out) out[k].textContent = fmt(c[k]);
+
+    var st = CC.limitStatus(c, limitIn.value, modeSel.value);
+    var box = $('limit-box'), lt = $('limit-text'), bar = $('limit-bar');
+    if (!st) {
+      lastLevel = null;
+      $('limit-alert').textContent = '';
+      var bad = limitIn.value.trim() !== '';
+      limitIn.setAttribute('aria-invalid', bad ? 'true' : 'false');
+      box.hidden = !bad;
+      lt.textContent = ''; // aria-describedby 가 옛 문구를 읽지 않도록
+      if (bad) {
+        // 알아볼 수 없는 값을 조용히 무시하지 않고 알려 줍니다.
+        lt.textContent = '제한 값을 알아볼 수 없습니다. 1 이상의 숫자로 넣어 주세요 (예: 500, 1,000).';
+        lt.className = 'limit-text';
+        bar.hidden = true;
+      }
+      return;
+    }
+    limitIn.setAttribute('aria-invalid', 'false');
+    box.hidden = false;
+    bar.hidden = false;
+    var u = st.unit;
+    var text;
+    if (st.level === 'err') {
+      text = '초과 — ' + fmt(st.over) + u + ' 넘음 (' + fmt(st.used) + ' / ' + fmt(st.limit) + u + ', ' + st.percent + '%)';
+    } else {
+      text = (st.level === 'warn' ? '주의' : '여유') + ' — 남은 ' + fmt(st.remaining) + u +
+        ' (' + fmt(st.used) + ' / ' + fmt(st.limit) + u + ', ' + st.percent + '%)';
+    }
+    lt.textContent = text;
+    lt.className = 'limit-text ' + st.level;
+    bar.className = 'bar ' + st.level;
+    $('limit-fill').style.width = Math.min(100, st.percent) + '%';
+
+    if (st.level !== lastLevel) {
+      if (lastLevel !== null || st.level !== 'ok') {
+        $('limit-alert').textContent = st.level === 'err' ? '제한을 초과했습니다.' :
+          st.level === 'warn' ? '제한의 90% 이상을 썼습니다.' : '제한 안에 들어왔습니다.';
+      }
+      lastLevel = st.level;
+    }
+  }
+
+  function scheduleRender() {
+    // 아주 긴 글은 입력이 잠시 멈출 때 계산해 타이핑이 끊기지 않게 합니다.
+    if (ta.value.length > 30000) {
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(render, 150);
+    } else {
+      clearTimeout(renderTimer);
+      render();
+    }
+  }
+
+  function replaceText(newText, message) {
+    undoText = ta.value;
+    ta.value = newText;
+    undoBtn.hidden = false;
+    setMsg(message);
+    render();
+    saveNow();
+  }
+
+  ta.addEventListener('input', function () {
+    if (!undoBtn.hidden) { undoBtn.hidden = true; undoText = null; }
+    scheduleRender();
+    scheduleSave();
+  });
+  [nlSel, limitIn, modeSel].forEach(function (el) {
+    el.addEventListener('input', function () { render(); scheduleSave(); });
+    el.addEventListener('change', function () { render(); scheduleSave(); });
+  });
+
+  $('btn-tidy').addEventListener('click', function () {
+    var before = ta.value;
+    var after = CC.tidy(before);
+    if (after === before.replace(/\r\n?/g, '\n')) {
+      setMsg('정리할 공백이나 빈 줄이 없습니다.');
+      return;
+    }
+    var nl = Number(nlSel.value);
+    var diff = CC.count(before, { newline: nl }).withSpaces - CC.count(after, { newline: nl }).withSpaces;
+    replaceText(after, diff > 0 ? '정리했습니다. 공백 포함 글자수가 ' + fmt(diff) + '자 줄었습니다.' :
+      '정리했습니다. 공백 포함 글자수는 그대로입니다' + (nl === 0 ? ' (줄바꿈을 0자로 세는 중).' : '.'));
+  });
+
+  $('btn-clear').addEventListener('click', function () {
+    if (!ta.value) { setMsg('지울 내용이 없습니다.'); ta.focus(); return; }
+    replaceText('', '지웠습니다. 실수였다면 ‘되돌리기’를 누르세요.');
+    ta.focus();
+  });
+
+  undoBtn.addEventListener('click', function () {
+    if (undoText === null) return;
+    ta.value = undoText;
+    undoText = null;
+    undoBtn.hidden = true;
+    setMsg('되돌렸습니다.');
+    render();
+    saveNow();
+    ta.focus();
+  });
+
+  function copyFallback() {
+    var start = ta.selectionStart, end = ta.selectionEnd;
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.setSelectionRange(start, end);
+    return ok;
+  }
+
+  $('btn-copy').addEventListener('click', function () {
+    var text = ta.value;
+    if (!text) { setMsg('복사할 내용이 없습니다.'); return; }
+    var done = function (ok) {
+      setMsg(ok ? '전체 글을 클립보드에 복사했습니다.' : '복사하지 못했습니다. 글을 직접 선택해 복사해 주세요.');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(copyFallback()); });
+    } else {
+      done(copyFallback());
+    }
+  });
+
+  window.addEventListener('pagehide', function () { if (saveTimer) saveNow(); });
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
