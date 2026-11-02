@@ -278,7 +278,7 @@
     } else if (n === 0) {
       r.nativeNote = 'Native Korean has no word for zero. Use 영 (or 공 when reading digits, e.g. phone numbers).';
     } else {
-      r.nativeNote = 'Native Korean numbers are normally used only from 1 to 99. For 100 and above, Koreans use Sino-Korean numbers even when counting things: 백 개 (100 items), 백 명 (100 people).';
+      r.nativeNote = 'Learn native Korean numbers from 1 to 99. For 100 and above, use Sino-Korean units such as 백 and 천: 백 개 (100 items), 백 명 (100 people). When counting, the last part may still be native.';
     }
     return r;
   }
